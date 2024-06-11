@@ -132,3 +132,20 @@ describe('most blogs', () => {
     assert.strictEqual(result, '')
   })
 })
+
+describe('most likes', () => {
+  test('when list has six blogs, return author with most likes', () => {
+    const result = listHelper.mostLikes(listWithSixBlogs)
+    assert.strictEqual(result, 'Edsger W. Dijkstra')
+  })
+
+  test('when list has one blog, return author of that blog', () => {
+    const result = listHelper.mostLikes(listWithOneBlog)
+    assert.strictEqual(result, 'Edsger W. Dijkstra')
+  })
+
+  test('when list is empty, return empty string', () => {
+    const result = listHelper.mostLikes(listWithZeroBlogs)
+    assert.strictEqual(result, '')
+  })
+})
