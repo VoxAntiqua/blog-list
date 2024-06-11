@@ -121,4 +121,14 @@ describe('most blogs', () => {
     const result = listHelper.mostBlogs(listWithSixBlogs)
     assert.strictEqual(result, 'Robert C. Martin')
   })
+
+  test('when list has one blog, return author of that blog', () => {
+    const result = listHelper.mostBlogs(listWithOneBlog)
+    assert.strictEqual(result, 'Edsger W. Dijkstra')
+  })
+
+  test('when list is empty, return empty string', () => {
+    const result = listHelper.mostBlogs(listWithZeroBlogs)
+    assert.strictEqual(result, '')
+  })
 })
