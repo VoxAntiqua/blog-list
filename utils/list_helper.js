@@ -17,12 +17,7 @@ const favoriteBlog = blogs => {
   if (blogs.length === 0) {
     return {}
   } else {
-    let topBlog = blogs[0]
-    blogs.forEach(blog => {
-      if (blog.likes > topBlog.likes) {
-        topBlog = blog
-      }
-    })
+    const topBlog = _.maxBy(blogs, blog => blog.likes)
     return {
       title: topBlog.title,
       author: topBlog.author,
