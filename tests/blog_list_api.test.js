@@ -75,6 +75,21 @@ test('Added blog with no likes property defaults to 0', async () => {
   assert.strictEqual(response.body[response.body.length - 1].likes, 0)
 })
 
+test('Missing title or url properties gets response of 400 Bad Request', async () => {
+  const noUrlBlog = {
+    title: 'Test Addition',
+    author: 'Homer Simpson',
+  }
+
+  const noTitleBlog = {
+    author: 'Homer Simpson',
+    url: 'http://example.com',
+  }
+
+  await api.post('/api/blogs').send(noUrlBlog).expect(400)
+  await api.post('/api/blogs').send(noTitleBlog).expect(400)
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
