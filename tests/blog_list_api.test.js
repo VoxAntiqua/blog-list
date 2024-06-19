@@ -90,6 +90,12 @@ describe('when database initially has blogs saved', () => {
     await api.post('/api/blogs').send(noUrlBlog).expect(400)
     await api.post('/api/blogs').send(noTitleBlog).expect(400)
   })
+
+  /*   test('Can delete blog entry', async () => {
+    const response = await api.get('/api/blogs')
+    const idToDelete = response.body.id
+    await api.delete(`/api/blogs/${idToDelete}`)
+  }) */
 })
 
 after(async () => {
