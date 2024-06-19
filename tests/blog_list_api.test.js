@@ -26,13 +26,13 @@ describe('when database initially has blogs saved', () => {
   })
 
   test('GET returns correct number of blog posts', async () => {
-    const response = await api.get('/api/blogs')
-    assert.strictEqual(response.body.length, helper.listWithSixBlogs.length)
+    const response = await helper.blogsInDb()
+    assert.strictEqual(response.length, helper.listWithSixBlogs.length)
   })
 
   test('Unique identifier is named "id"', async () => {
-    const response = await api.get('/api/blogs')
-    assert(Object.hasOwn(response.body[0], 'id'))
+    const response = await helper.blogsInDb()
+    assert(Object.hasOwn(response[0], 'id'))
   })
 
   test('New blog is correctly added', async () => {
@@ -49,11 +49,11 @@ describe('when database initially has blogs saved', () => {
       .expect(201)
       .expect('Content-Type', /application\/json/)
 
-    const response = await api.get('/api/blogs')
+    const response = await helper.blogsInDb()
 
-    const titles = response.body.map(r => r.title)
+    const titles = response.map(r => r.title)
 
-    assert.strictEqual(response.body.length, helper.listWithSixBlogs.length + 1)
+    assert.strictEqual(response.length, helper.listWithSixBlogs.length + 1)
     assert(titles.includes('Test Addition'))
   })
 
@@ -70,10 +70,10 @@ describe('when database initially has blogs saved', () => {
       .expect(201)
       .expect('Content-Type', /application\/json/)
 
-    const response = await api.get('/api/blogs')
+    const response = await helper.blogsInDb()
 
-    assert(Object.hasOwn(response.body[response.body.length - 1], 'likes'))
-    assert.strictEqual(response.body[response.body.length - 1].likes, 0)
+    assert(Object.hasOwn(response[response.length - 1], 'likes'))
+    assert.strictEqual(response[response.length - 1].likes, 0)
   })
 
   test('Missing title or url properties gets response of 400 Bad Request', async () => {
