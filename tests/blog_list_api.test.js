@@ -108,6 +108,27 @@ describe('when database initially has blogs saved', () => {
       assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
     })
   })
+
+  describe('updating entries', () => {
+    test('Can update blog entry', async () => {
+      const blogsAtStart = await helper.blogsInDb()
+      const blogToUpdate = blogsAtStart[0]
+
+      const newBlog = {
+        title: 'Test Addition',
+        author: 'Homer Simpson',
+        url: 'http://example.com/',
+        likes: 0,
+        id: blogToUpdate.id,
+      }
+
+      await api.put(`/api/blogs/${blogToUpdate.id}`).send(newBlog).expect(200)
+
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.deepStrictEqual(blogsAtEnd[0], newBlog)
+      assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)
+    })
+  })
 })
 
 after(async () => {
