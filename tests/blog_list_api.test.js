@@ -91,11 +91,17 @@ describe('when database initially has blogs saved', () => {
     await api.post('/api/blogs').send(noTitleBlog).expect(400)
   })
 
-  /*   test('Can delete blog entry', async () => {
-    const response = await api.get('/api/blogs')
-    const idToDelete = response.body.id
-    await api.delete(`/api/blogs/${idToDelete}`)
-  }) */
+  test('Can delete blog entry', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToDelete = blogsAtStart[0]
+
+    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+    const blogsAtEnd = await helper.blogsInDb()
+    const ids = blogsAtEnd.map(b => b.id)
+
+    assert(!ids.includes(blogToDelete.id))
+    assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
+  })
 })
 
 after(async () => {
