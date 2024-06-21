@@ -164,6 +164,54 @@ describe('user administration tests', () => {
   })
 })
 
+test('user with invalid username is not added', async () => {
+  const newUser = {
+    username: 'a',
+    name: 'New User',
+    password: 'newuserpassword',
+  }
+
+  const usersAtStart = await helper.usersInDb()
+
+  await api.post('/api/users').send(newUser).expect(400)
+
+  const usersAtEnd = await helper.usersInDb()
+
+  assert.strictEqual(usersAtStart.length, usersAtEnd.length)
+})
+
+test('user with invalid password is not added', async () => {
+  const newUser = {
+    username: 'newuser',
+    name: 'New User',
+    password: 'n',
+  }
+
+  const usersAtStart = await helper.usersInDb()
+
+  await api.post('/api/users').send(newUser).expect(400)
+
+  const usersAtEnd = await helper.usersInDb()
+
+  assert.strictEqual(usersAtStart.length, usersAtEnd.length)
+})
+
+test('user with non-unique username is not added', async () => {
+  const usersAtStart = await helper.usersInDb()
+
+  const newUser = {
+    username: usersAtStart[0].username,
+    name: 'New User',
+    password: 'newuserpassword',
+  }
+
+  await api.post('/api/users').send(newUser).expect(400)
+
+  const usersAtEnd = await helper.usersInDb()
+
+  assert.strictEqual(usersAtStart.length, usersAtEnd.length)
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
