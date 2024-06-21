@@ -5,6 +5,7 @@ const supertest = require('supertest')
 const app = require('../app')
 const helper = require('./test_helper')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
 const api = supertest(app)
 
@@ -128,6 +129,38 @@ describe('when database initially has blogs saved', () => {
       assert.deepStrictEqual(blogsAtEnd[0], newBlog)
       assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)
     })
+  })
+})
+
+describe('user administration tests', () => {
+  beforeEach(async () => {
+    await User.deleteMany({})
+
+    for (let user of helper.initialUsers) {
+      let userObject = new User(user)
+      await userObject.save()
+    }
+  })
+
+  test('valid user can be added', async () => {
+    const newUser = {
+      username: 'newuser',
+      name: 'New User',
+      password: 'newuserpassword',
+    }
+
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const response = await helper.usersInDb()
+
+    const usernames = response.map(r => r.username)
+
+    assert.strictEqual(response.length, helper.initialUsers.length + 1)
+    assert(usernames.includes('newuser'))
   })
 })
 
