@@ -1,6 +1,8 @@
 const { response } = require('express')
 const logger = require('./logger')
 require('dotenv').config()
+const jwt = require('jsonwebtoken')
+const User = require('../models/user')
 
 const requestLogger = (request, response, next) => {
   if (process.env.NODE_ENV !== 'test') {
@@ -45,9 +47,19 @@ const tokenExtractor = (request, response, next) => {
   next()
 }
 
+const userExtractor = async (request, response, next) => {
+  const decodedToken = jwt.verify(request.token, process.env.SECRET)
+  if (decodedToken.id) {
+    const userObject = await User.findById(decodedToken.id)
+    request.user = userObject
+  }
+  next()
+}
+
 module.exports = {
   requestLogger,
   unknownEndpoint,
   errorHandler,
   tokenExtractor,
+  userExtractor,
 }
