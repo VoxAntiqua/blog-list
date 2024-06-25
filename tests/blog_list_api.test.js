@@ -143,6 +143,22 @@ describe('blog routes tests', () => {
       assert(titles.includes('Test Addition'))
     })
 
+    test('Adding a blog fails if token is not provided', async () => {
+      const newBlog = {
+        title: 'Test Addition',
+        author: 'Homer Simpson',
+        url: 'http://example.com/',
+        likes: 0,
+      }
+
+      const blogsAtStart = await helper.blogsInDb()
+
+      await api.post('/api/blogs').send(newBlog).expect(401)
+
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtStart.length, blogsAtEnd.length)
+    })
+
     test('Added blog with no likes property defaults to 0', async () => {
       const newBlog = {
         title: 'Test Addition',
