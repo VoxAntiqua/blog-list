@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt')
 const Blog = require('../models/blog')
 const User = require('../models/user')
 
@@ -67,11 +68,13 @@ const initialUsers = [
   {
     username: 'adp10390',
     name: 'Andrew Padgett',
+    password: 'password1', // Plaintext password for testing only
     id: '6675894ee28c21ee15d555ef',
   },
   {
     username: 'voxantiqua',
     name: 'Also Andrew Padgett',
+    password: 'password2', // Plaintext password for testing only
     id: '66758ef68efe30788e66cef9',
   },
 ]
@@ -88,6 +91,20 @@ const usersInDb = async () => {
   return users.map(user => user.toJSON())
 }
 
+const initializeUsers = async () => {
+  await User.deleteMany({})
+  const saltRounds = 10
+  for (let user of initialUsers) {
+    const passwordHash = await bcrypt.hash(user.password, saltRounds)
+    const userObject = new User({
+      username: user.username,
+      name: user.name,
+      passwordHash,
+    })
+    await userObject.save()
+  }
+}
+
 module.exports = {
   listWithSixBlogs,
   listWithOneBlog,
@@ -95,4 +112,5 @@ module.exports = {
   blogsInDb,
   initialUsers,
   usersInDb,
+  initializeUsers,
 }

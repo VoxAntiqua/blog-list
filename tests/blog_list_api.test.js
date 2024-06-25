@@ -9,16 +9,97 @@ const User = require('../models/user')
 
 const api = supertest(app)
 
-describe('when database initially has blogs saved', () => {
-  beforeEach(async () => {
-    await Blog.deleteMany({})
+let token
 
-    for (let blog of helper.listWithSixBlogs) {
-      let blogObject = new Blog(blog)
-      await blogObject.save()
-    }
+beforeEach(async () => {
+  await helper.initializeUsers()
+
+  const loginResponse = await api.post('/api/login').send({
+    username: helper.initialUsers[0].username,
+    password: helper.initialUsers[0].password,
   })
 
+  token = loginResponse.body.token
+
+  await Blog.deleteMany({})
+  for (let blog of helper.listWithSixBlogs) {
+    let blogObject = new Blog({ ...blog, user: loginResponse.body.id })
+    await blogObject.save()
+  }
+})
+
+describe('user administration tests', () => {
+  test('valid user can be added', async () => {
+    const newUser = {
+      username: 'newuser',
+      name: 'New User',
+      password: 'newuserpassword',
+    }
+
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const response = await helper.usersInDb()
+
+    const usernames = response.map(r => r.username)
+
+    assert.strictEqual(response.length, helper.initialUsers.length + 1)
+    assert(usernames.includes('newuser'))
+  })
+})
+
+test('user with invalid username is not added', async () => {
+  const newUser = {
+    username: 'a',
+    name: 'New User',
+    password: 'newuserpassword',
+  }
+
+  const usersAtStart = await helper.usersInDb()
+
+  await api.post('/api/users').send(newUser).expect(400)
+
+  const usersAtEnd = await helper.usersInDb()
+
+  assert.strictEqual(usersAtStart.length, usersAtEnd.length)
+})
+
+test('user with invalid password is not added', async () => {
+  const newUser = {
+    username: 'newuser',
+    name: 'New User',
+    password: 'n',
+  }
+
+  const usersAtStart = await helper.usersInDb()
+
+  await api.post('/api/users').send(newUser).expect(400)
+
+  const usersAtEnd = await helper.usersInDb()
+
+  assert.strictEqual(usersAtStart.length, usersAtEnd.length)
+})
+
+test('user with non-unique username is not added', async () => {
+  const usersAtStart = await helper.usersInDb()
+
+  const newUser = {
+    username: usersAtStart[0].username,
+    name: 'New User',
+    password: 'newuserpassword',
+  }
+
+  await api.post('/api/users').send(newUser).expect(400)
+
+  const usersAtEnd = await helper.usersInDb()
+
+  assert.strictEqual(usersAtStart.length, usersAtEnd.length)
+})
+
+describe('blog routes tests', () => {
   describe('retrieving entries', () => {
     test('GET returns blog posts as json', async () => {
       await api
@@ -130,86 +211,6 @@ describe('when database initially has blogs saved', () => {
       assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)
     })
   })
-})
-
-describe('user administration tests', () => {
-  beforeEach(async () => {
-    await User.deleteMany({})
-
-    for (let user of helper.initialUsers) {
-      let userObject = new User(user)
-      await userObject.save()
-    }
-  })
-
-  test('valid user can be added', async () => {
-    const newUser = {
-      username: 'newuser',
-      name: 'New User',
-      password: 'newuserpassword',
-    }
-
-    await api
-      .post('/api/users')
-      .send(newUser)
-      .expect(201)
-      .expect('Content-Type', /application\/json/)
-
-    const response = await helper.usersInDb()
-
-    const usernames = response.map(r => r.username)
-
-    assert.strictEqual(response.length, helper.initialUsers.length + 1)
-    assert(usernames.includes('newuser'))
-  })
-})
-
-test('user with invalid username is not added', async () => {
-  const newUser = {
-    username: 'a',
-    name: 'New User',
-    password: 'newuserpassword',
-  }
-
-  const usersAtStart = await helper.usersInDb()
-
-  await api.post('/api/users').send(newUser).expect(400)
-
-  const usersAtEnd = await helper.usersInDb()
-
-  assert.strictEqual(usersAtStart.length, usersAtEnd.length)
-})
-
-test('user with invalid password is not added', async () => {
-  const newUser = {
-    username: 'newuser',
-    name: 'New User',
-    password: 'n',
-  }
-
-  const usersAtStart = await helper.usersInDb()
-
-  await api.post('/api/users').send(newUser).expect(400)
-
-  const usersAtEnd = await helper.usersInDb()
-
-  assert.strictEqual(usersAtStart.length, usersAtEnd.length)
-})
-
-test('user with non-unique username is not added', async () => {
-  const usersAtStart = await helper.usersInDb()
-
-  const newUser = {
-    username: usersAtStart[0].username,
-    name: 'New User',
-    password: 'newuserpassword',
-  }
-
-  await api.post('/api/users').send(newUser).expect(400)
-
-  const usersAtEnd = await helper.usersInDb()
-
-  assert.strictEqual(usersAtStart.length, usersAtEnd.length)
 })
 
 after(async () => {
