@@ -130,6 +130,7 @@ describe('blog routes tests', () => {
 
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
         .expect(201)
         .expect('Content-Type', /application\/json/)
@@ -151,6 +152,7 @@ describe('blog routes tests', () => {
 
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
         .expect(201)
         .expect('Content-Type', /application\/json/)
@@ -172,8 +174,16 @@ describe('blog routes tests', () => {
         url: 'http://example.com',
       }
 
-      await api.post('/api/blogs').send(noUrlBlog).expect(400)
-      await api.post('/api/blogs').send(noTitleBlog).expect(400)
+      await api
+        .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
+        .send(noUrlBlog)
+        .expect(400)
+      await api
+        .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
+        .send(noTitleBlog)
+        .expect(400)
     })
   })
 
