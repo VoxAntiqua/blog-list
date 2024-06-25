@@ -189,15 +189,42 @@ describe('blog routes tests', () => {
 
   describe('deleting entries', () => {
     test('Can delete blog entry', async () => {
-      const blogsAtStart = await helper.blogsInDb()
-      const blogToDelete = blogsAtStart[0]
+      const newUser = {
+        username: 'testuser',
+        name: 'Test User',
+        password: 'testpassword',
+      }
 
-      await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+      // Create and login user
+      await api.post('/api/users').send(newUser)
+      const loginResponse = await api.post('/api/login').send(newUser)
+      const token = loginResponse.body.token
+
+      const newBlog = {
+        title: 'Test Blog',
+        author: 'Test Author',
+        url: 'http://example.com',
+        likes: 0,
+      }
+
+      // Add blog with user token
+      const blogResponse = await api
+        .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
+        .send(newBlog)
+        .expect(201)
+
+      const blogToDelete = blogResponse.body
+
+      await api
+        .delete(`/api/blogs/${blogToDelete.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(204)
+
       const blogsAtEnd = await helper.blogsInDb()
       const ids = blogsAtEnd.map(b => b.id)
 
       assert(!ids.includes(blogToDelete.id))
-      assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
     })
   })
 
