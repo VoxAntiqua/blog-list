@@ -74,7 +74,9 @@ blogsRouter.post('/:id/comments', async (request, response) => {
     return response.status(404).json({ error: 'blog not found' })
   }
 
-  const comment = request.body.comment
+  const comment = {
+    content: request.body.comment,
+  }
   if (!comment) {
     return response.status(400).json({ error: 'comment is requred' })
   }
